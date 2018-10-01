@@ -1,7 +1,6 @@
 import uuid from "uuid";
 import set from "lodash/set";
 import startCase from "lodash/startCase";
-import parseXML from "./xml-parser";
 
 const IGNORED_PROPS = ["style", "subtype", "role", "access", "toggle", "other"];
 
@@ -221,9 +220,6 @@ const formeoStage = rowIds => {
 };
 
 export default function convertData(data = "[]") {
-  if (/^<form-template>/.test(data)) {
-    data = JSON.stringify(parseXML(data));
-  }
   data = JSON.parse(data);
   let row_array = data.rows;
 
