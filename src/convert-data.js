@@ -15,7 +15,10 @@ const propMap = {
   attrs: "attrs",
   options: "options",
   meta: "meta",
-  icon: "meta.icon"
+  icon: "meta.icon",
+  inputType: "attrs.type",
+  multiple: "meta.multiple", // Formeo errors out if multiple is a attr. Put in meta for now.
+
 };
 
 // define all the types that are `input` types
@@ -84,6 +87,37 @@ const typeModifiers = {
       className: rest.className
     };
     return rest;
+  },
+  select: fieldData => {
+    const { selectOptions = {}, values = [], ...rest } = fieldData;
+    rest["values"] = [];
+    if("noneSelectedText" in selectOptions){
+       rest["values"].push({
+           label: String(selectOptions.noneSelectedText) || "test",
+           value: "",
+       });
+    }
+    for (let val of values) {
+        if(typeof val === "object"){
+            rest["values"].push({
+                label: String(val.name),
+                value: val.id,
+                selected: val.id === rest.initial
+            })
+        } else {
+            rest["values"].push({
+                label: String(val),
+                value: val,
+                selected: val === rest.initial
+            })
+        }
+    }
+    return rest;
+  },
+  surefyreUpload: fieldData => {
+    fieldData["inputType"] = "file";
+    fieldData["tag"] = "input";
+    return fieldData;
   }
 };
 
@@ -100,7 +134,22 @@ const formeoRow = ({ id }) => ({
   children: [id]
 });
 
-const formeoColumn = ({ id }) => ({ id: uuid(), children: [id] });
+const formeoCreateRow = (ids) => ({
+  id: uuid(),
+  config: {
+    fieldset: false,
+    legend: "",
+    inputGroup: false
+  },
+  className: ["f-row"],
+  attrs: {
+    className: "f-row"
+  },
+  children: ids
+});
+
+const formeoColumn = ({ id }) => ({ id: uuid(), children: [id], config: { width: "100%"}, className: "f-column" });
+const formeoCreateColumn = (fieldIds) => ({ id: uuid(), children: fieldIds, config: { width: "100%"}, className: "f-column" });
 
 const formeoField = fieldData => {
   const { type, subtype } = fieldData;
@@ -126,6 +175,7 @@ const formeoField = fieldData => {
             set(acc, path || key, val);
           });
         } else {
+
           set(acc, newPath || `attrs.${key}`, val);
         }
       }
@@ -174,9 +224,39 @@ export default function convertData(data = "[]") {
   if (/^<form-template>/.test(data)) {
     data = JSON.stringify(parseXML(data));
   }
-  const fields = dataReducer(JSON.parse(data));
-  const columns = dataReducer(Object.values(fields), "columns");
-  const rows = dataReducer(Object.values(columns), "rows");
+  data = JSON.parse(data);
+  let row_array = data.rows;
+
+  let fields = {};
+  let columns = {};
+  let rows = {};
+  let id;
+
+
+  for (let r of row_array){
+      let col_ids = [];
+      for (let c of r.schema.groups) {
+          // Each column in the row
+        let loc_fields = dataReducer(c.fields);
+        let loc_column = formeoCreateColumn(Object.values(loc_fields).map(x => x.id));
+        col_ids.push(loc_column.id);
+
+        // Update global columns and fields
+        id = loc_column["id"];
+        let col_obj = {};
+        col_obj[id] = loc_column;
+        columns = Object.assign(columns, col_obj);
+        fields = Object.assign(fields, loc_fields);
+      }
+      // Create row and add column children
+      let row = formeoCreateRow(col_ids);
+      let row_obj = {};
+      id = row.id;
+      row_obj[id] = row
+
+      rows = Object.assign(rows, row_obj);
+  }
+
 
   const formeoData = {
     id: uuid(),

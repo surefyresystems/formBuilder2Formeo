@@ -1,36 +1,254 @@
-const formBuilderData = `<form-template>
-  <fields>
-    <field type="button" label="Button" subtype="button" class="btn-default btn" name="button-1532560556955" style="default"></field>
-    <field type="checkbox-group" label="Checkbox Group" name="checkbox-group-1532560558007">
-      <option label="Option 1" value="option-1" selected="true">Option 1</option>
-    </field>
-    <field type="date" label="Date Field" class="form-control" name="date-1532560560660"></field>
-    <field type="file" label="File Upload" class="form-control" name="file-1532560561652" subtype="file"></field>
-    <field type="header" subtype="h1" label="Header"></field>
-    <field type="hidden" name="hidden-1532560563828"></field>
-    <field type="number" label="Big Numbers" class="form-control" name="number-1532560564902"></field>
-    <field type="paragraph" subtype="p" label="Paragraph"></field>
-    <field type="radio-group" label="Radio Group" name="radio-group-1532560567189">
-      <option label="Option 1" value="option-1">Option 1</option>
-      <option label="Option 2" value="option-2">Option 2</option>
-      <option label="Option 3" value="option-3">Option 3</option>
-    </field>
-    <field type="select" label="Select" class="form-control" name="select-1532560568214">
-      <option label="Option 1" value="option-1" selected="true">Option 1</option>
-      <option label="Option 2" value="option-2">Option 2</option>
-      <option label="Option 3" value="option-3">Option 3</option>
-    </field>
-    <field type="text" label="Text Field" name="text-1532560569251" subtype="text" class="red form-control"></field>
-    <field type="textarea" subtype="tinymce" required="true" label="tinyMCE" class="form-control" name="textarea-1532560570358"></field>
-    <field type="starRating" label="Star Rating" name="starRating-1532560571406"></field>
-    <field type="header" subtype="h2" label="User Details"></field>
-    <field type="text" label="First Name" name="text-1532560573320" subtype="text" class="red form-control"></field>
-    <field type="select" label="Profession" class="form-control" name="select-1532560573336">
-      <option label="Street Sweeper" value="option-2">Street Sweeper</option>
-      <option label="Brain Surgeon" value="option-3">Brain Surgeon</option>
-    </field>
-    <field type="textarea" label="Short Bio:" class="form-control" name="textarea-1532560573374" subtype="textarea"></field>
-  </fields>
-</form-template>`;
+const formBuilderData = `
+{
+    "rows": [{
+            "visible": "model.name == 'dustin'",
+            "schema": {
+                "groups": [{
+                        "fields": [{
+                                "label": "ID (disabled text field)",
+                                "disabled": true,
+                                "readonly": true,
+                                "model": "id",
+                                "type": "input",
+                                "inputType": "text"
+                            },
+                            {
+                                "hint": "Minimum 6 characters",
+                                "required": true,
+                                "label": "Password",
+                                "min": 6,
+                                "model": "password",
+                                "type": "input",
+                                "inputType": "password"
+                            },
+                            {
+                                "values": [{
+                                        "id": 3,
+                                        "name": "Karate"
+                                    },
+                                    "Kung Fu",
+                                    "Nunchucks"
+                                ],
+                                "model": "skills",
+                                "selectOptions": {
+                                    "noneSelectedText": "Nothing at all today"
+                                },
+                                "type": "select",
+                                "label": "Skills"
+                            },
+                            {
+                                "placeholder": "User's e-mail address",
+                                "model": "email",
+                                "type": "input",
+                                "inputType": "email",
+                                "label": "E-mail"
+                            },
+                            {
+                                "placeholder": "Business Name",
+                                "model": "business",
+                                "type": "input",
+                                "inputType": "text",
+                                "label": "Business Name"
+                            },
+                            {
+                                "placeholder": "Spouse Title",
+                                "model": "title",
+                                "default": "Mrs.",
+                                "type": "input",
+                                "inputType": "text",
+                                "label": "Spouse Title"
+                            },
+                            {
+                                "model": "status",
+                                "initial": true,
+                                "type": "checkbox",
+                                "label": "Status"
+                            }
+                        ],
+                        "styleClasses": "col-md-6"
+                    },
+                    {
+                        "fields": [{
+                                "selectOptions": {
+                                    "noneSelectedText": "-----"
+                                },
+                                "visible": "model.skills === 3",
+                                "values": [
+                                    "white",
+                                    "green",
+                                    "purple",
+                                    "black"
+                                ],
+                                "model": "belt",
+                                "label": "Belt Level",
+                                "type": "select"
+                            },
+                            {
+                                "selectOptions": {
+                                    "noneSelectedText": "-----"
+                                },
+                                "visible": "model.belt && model.skills === 3",
+                                "values": [
+                                    1,
+                                    2,
+                                    3
+                                ],
+                                "model": "stripes",
+                                "label": "Number of stripes",
+                                "type": "select"
+                            }
+                        ],
+                        "styleClasses": "col-md-6"
+                    }
+                ]
+            }
+        },
+        {
+            "schema": {
+                "groups": [{
+                        "fields": [{
+                                "required": true,
+                                "hint": "Please enter your first name",
+                                "placeholder": "Your first name",
+                                "initial": "John",
+                                "label": "Name",
+                                "featured": true,
+                                "model": "name",
+                                "type": "input",
+                                "inputType": "text"
+                            },
+                            {
+                                "label": "ID (disabled text field row 2)",
+                                "disabled": true,
+                                "visible": "model.name == 'dustin'",
+                                "readonly": true,
+                                "model": "id",
+                                "type": "input",
+                                "inputType": "text"
+                            },
+                            {
+                                "type": "surefyreUpload", 
+                                "accept": ".pdf,.txt", 
+                                "multiple": true, 
+                                "label": "Upload files here!", 
+                                "inputName": "file-upload-1", 
+                                "onChange": ""
+                            },
+                            {
+                                "type": "surefyreUpload", 
+                                "accept": "", 
+                                "multiple": false, 
+                                "label": "Upload next files here!", 
+                                "inputName": "file-upload-2", 
+                                "onChange": ""
+                            },
+                            {
+                                "label": "ID (disabled cat)",
+                                "disabled": true,
+                                "visible": "model.name == 'cat'",
+                                "readonly": true,
+                                "model": "id",
+                                "type": "input",
+                                "inputType": "text"
+                            },
+                            {
+                                "onSubmit": "true",
+                                "type": "submit",
+                                "buttonText": "Save"
+                            }
+                        ],
+                        "styleClasses": "col-md-3"
+                    },
+                    {
+                        "fields": [{
+                            "hint": "Please enter your last name",
+                            "placeholder": "Your last name",
+                            "initial": "Doe",
+                            "label": "Last Name",
+                            "featured": true,
+                            "model": "last",
+                            "type": "input",
+                            "inputType": "text"
+                        }],
+                        "styleClasses": "col-md-3"
+                    }
+                ]
+            }
+        }
+    ],
+    "version": 1,
+    "relations": {
+        "licenses__address": [{
+            "fields": [{
+                "attr": "content_object",
+                "model": "_parent"
+            }]
+        }],
+        "licenses__person": [{
+                "fields": [{
+                        "model": "name",
+                        "attr": "first_name"
+                    },
+                    {
+                        "model": "last",
+                        "attr": "last_name"
+                    },
+                    {
+                        "model": "_parent",
+                        "attr": "lead"
+                    }
+                ]
+            },
+            {
+                "fields": [{
+                        "model": "name",
+                        "attr": "first_name"
+                    },
+                    {
+                        "model": "last",
+                        "attr": "last_name"
+                    },
+                    {
+                        "model": "_parent",
+                        "attr": "lead"
+                    }
+                ]
+            },
+            {
+                "fields": [{
+                        "model": "dummyNothingShouldGetCreated",
+                        "attr": "first_name"
+                    },
+                    {
+                        "model": "dummyNothingShouldGetCreated",
+                        "attr": "last_name"
+                    },
+                    {
+                        "model": "_parent",
+                        "attr": "lead"
+                    }
+                ]
+            },
+            {
+                "fields": [{
+                        "model": "title",
+                        "attr": "name_title"
+                    },
+                    {
+                        "model": "_parent",
+                        "attr": "lead"
+                    }
+                ]
+            }
+        ],
+        "lead": {
+            "fields": [{
+                "model": "business",
+                "attr": "bus_name"
+            }]
+        }
+    }
+}
+`;
 
 export default formBuilderData;
