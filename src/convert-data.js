@@ -179,7 +179,6 @@ const formeoCreateRow = (ids) => ({
     legend: "",
     inputGroup: false
   },
-  className: ["f-row"],
   attrs: {
     className: "f-row"
   },
@@ -187,7 +186,7 @@ const formeoCreateRow = (ids) => ({
 });
 
 const formeoColumn = ({ id }) => ({ id: uuid(), children: [id], config: { width: "100%"}, className: "f-column" });
-const formeoCreateColumn = (fieldIds) => ({ id: uuid(), children: fieldIds, config: { width: "100%"}, className: "f-column" });
+const formeoCreateColumn = (fieldIds, width=100) => ({ id: uuid(), children: fieldIds, config: { width: `${width}%`}, className: "f-column" });
 
 const formeoField = fieldData => {
   const { type, subtype } = fieldData;
@@ -309,10 +308,11 @@ function convertData(data = "[]") {
 
   for (let r of row_array){
       let col_ids = [];
+      let width = (100/r.schema.groups.length).toFixed(2);
       for (let c of r.schema.groups) {
           // Each column in the row
         let loc_fields = dataReducer(c.fields);
-        let loc_column = formeoCreateColumn(Object.values(loc_fields).map(x => x.id));
+        let loc_column = formeoCreateColumn(Object.values(loc_fields).map(x => x.id), width);
         col_ids.push(loc_column.id);
 
         // Update global columns and fields
