@@ -20,7 +20,8 @@ class App extends Component {
     const formeoDataVal = /^<form-template>/.test(value)
       ? JSON.stringify(parseXML(value))
       : value;
-    const formeoData = convertFieldFromFormeo(formatJSON(formeoDataVal));
+    //const formeoData = convertFieldFromFormeo(formatJSON(formeoDataVal));
+    const formeoData = convertData(formatJSON(formeoDataVal));
     this.setState({ fbData: value, formeoData });
   };
   render() {

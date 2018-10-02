@@ -15,6 +15,7 @@ const propMap = {
   type: "meta.id",
   description: "config.helpText",
   hint: "config.helpText",
+  fieldClasses: "attrs.className",
   tag: "tag",
   attrs: "attrs",
   //options: "options",
@@ -37,6 +38,7 @@ const propMapInverse = {
     "meta": null,
     "config": null,
     "selectOptions": "selectOptions",
+    "attr.className": "fieldClasses"
 };
 
 // define all the types that are `input` types
