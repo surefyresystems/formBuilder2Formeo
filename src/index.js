@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import Highlight from "react-highlight.js";
 import Clipboard from "react-clipboard.js";
-import convertData from "./convert-data";
+import {convertData, convertFieldFromFormeo} from "./convert-data";
 import parseXML from "./xml-parser";
 import formBuilderData from "./xml-test-data";
 import "./styles.css";
@@ -11,8 +11,8 @@ const formatJSON = json => JSON.stringify(JSON.parse(json), null, "  ");
 
 class App extends Component {
   state = {
-    fbData: formBuilderData,
-    formeoData: convertData(formBuilderData)
+    fbData: {},
+    formeoData: ""
   };
   handleFormbuilderData = evt => {
     evt.persist();
@@ -20,7 +20,7 @@ class App extends Component {
     const formeoDataVal = /^<form-template>/.test(value)
       ? JSON.stringify(parseXML(value))
       : value;
-    const formeoData = convertData(formatJSON(formeoDataVal));
+    const formeoData = convertFieldFromFormeo(formatJSON(formeoDataVal));
     this.setState({ fbData: value, formeoData });
   };
   render() {

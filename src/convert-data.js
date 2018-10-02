@@ -1,8 +1,12 @@
 import uuid from "uuid";
 import set from "lodash/set";
+import get from "lodash/get";
+import unset from "lodash/unset";
 import startCase from "lodash/startCase";
+import invert from "lodash/invert";
 
 const IGNORED_PROPS = ["style", "subtype", "role", "access", "toggle", "other"];
+const SUREFYRE_IGNORED_PROPS = ["style", "subtype", "role", "access", "toggle", "other"];
 
 // Add mappings here
 const propMap = {
@@ -10,14 +14,25 @@ const propMap = {
   values: "options",
   type: "meta.id",
   description: "config.helpText",
+  hint: "config.helpText",
   tag: "tag",
   attrs: "attrs",
-  options: "options",
+  //options: "options",
   meta: "meta",
   icon: "meta.icon",
   inputType: "attrs.type",
   multiple: "meta.multiple", // Formeo errors out if multiple is a attr. Put in meta for now.
 
+};
+
+const propMapInverse = {
+    "options": "values",
+    "config.helpText": "hint",
+    "attrs": null,
+    "tag": "type",
+    "meta": null,
+    "config": null,
+    "selectOptions": "selectOptions",
 };
 
 // define all the types that are `input` types
@@ -49,6 +64,26 @@ const htmlElements = [
   "canvas",
   "output"
 ];
+
+const surefyreTypeModifiers = {
+  select: fieldData => {
+    const { options = [], ...rest } = fieldData;
+    rest["options"] = [];
+    for (let val of options) {
+        if(val.value !== ""){
+            // Set the option
+            rest["options"].push({
+                name: val.label,
+                id: val.value,
+            });
+        } else {
+            // No value so it is the noneSelectedText
+            set(rest, "selectOptions.noneSelectedText", val.label);
+        }
+    }
+    return rest;
+  },
+};
 
 const typeModifiers = {
   "checkbox-group": fieldData => {
@@ -195,6 +230,47 @@ const formeoField = fieldData => {
   };
 };
 
+const surefyreField = fieldData => {
+
+  // set a tag for the field, usually its `input`
+  //set(fieldData, "tag", tagMap[metaId] || subtype || type);
+  let type = fieldData["tag"];
+  //set(fieldData, "type", fieldData["tag"]);
+  unset(fieldData, "meta.icon");
+  unset(fieldData, "meta.id");
+  unset(fieldData, "meta.group");
+  //unset(fieldData, "id");
+
+  // sometimes we need to change the structure rather than just remapping props
+  if (surefyreTypeModifiers[type]) {
+    fieldData = surefyreTypeModifiers[type](fieldData);
+  }
+
+  const modifiedFieldData = Object.entries(propMapInverse).reduce(
+    (acc, [key, newKey]) => {
+      if (!SUREFYRE_IGNORED_PROPS.includes(key)) {
+        const newValue = get(fieldData, key);
+
+          //console.log(fieldData);
+          //console.log(key);
+          //console.log(newKey);
+          //console.log(newValue);
+          //console.log(fieldData[key]);
+        if(newKey){
+            set(acc, newKey, newValue);
+        } else {
+            Object.assign(acc, newValue)
+        }
+      }
+      return acc;
+    },
+    {}
+  );
+    
+  return modifiedFieldData;
+
+};
+
 const formatter = {
   fields: formeoField,
   columns: formeoColumn,
@@ -219,7 +295,7 @@ const formeoStage = rowIds => {
   };
 };
 
-export default function convertData(data = "[]") {
+function convertData(data = "[]") {
   data = JSON.parse(data);
   let row_array = data.rows;
 
@@ -263,3 +339,10 @@ export default function convertData(data = "[]") {
   };
   return formeoData;
 }
+
+function convertFieldFromFormeo(fieldData) {
+    let data = JSON.parse(fieldData);
+    return surefyreField(data);
+}
+
+export {convertData, convertFieldFromFormeo};
