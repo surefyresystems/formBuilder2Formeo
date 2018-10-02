@@ -25,9 +25,12 @@ const propMap = {
 
 };
 
+// Order matters, after values are transformmed they get removed.
+// So config.helpText will be set to hint and will not be part of the "config": null
+// rule so helpText will not be another entry
 const propMapInverse = {
-    "options": "values",
     "config.helpText": "hint",
+    "options": "values",
     "attrs": null,
     "tag": "type",
     "meta": null,
@@ -251,15 +254,13 @@ const surefyreField = fieldData => {
       if (!SUREFYRE_IGNORED_PROPS.includes(key)) {
         const newValue = get(fieldData, key);
 
-          //console.log(fieldData);
-          //console.log(key);
-          //console.log(newKey);
-          //console.log(newValue);
-          //console.log(fieldData[key]);
-        if(newKey){
-            set(acc, newKey, newValue);
-        } else {
-            Object.assign(acc, newValue)
+        if(newValue) {
+            if(newKey){
+                set(acc, newKey, newValue);
+                unset(fieldData, key); // Consume it so it is not copied in other rules
+            } else {
+                Object.assign(acc, newValue)
+            }
         }
       }
       return acc;
