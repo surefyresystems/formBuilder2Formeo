@@ -30,6 +30,7 @@ const propMap = {
 // rule so helpText will not be another entry
 const propMapInverse = {
     "config.helpText": "hint",
+    "attrs.type": "inputType",
     "options": "values",
     "attrs": null,
     "tag": "type",
