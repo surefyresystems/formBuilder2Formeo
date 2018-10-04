@@ -283,7 +283,7 @@ const surefyreField = fieldData => {
   let type = fieldData["tag"];
 
   // Special case for HTML since it can't be figured out from tag
-  if(fieldData.meta.group === "html" || htmlElements.includes(modifiedFieldData.tag)){
+  if(fieldData.meta.group === "html" || htmlElements.includes(fieldData.tag)){
 
     fieldData.type = "html";
     type = "html";
