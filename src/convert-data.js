@@ -283,13 +283,12 @@ const surefyreField = fieldData => {
   let type = fieldData["tag"];
 
   // Special case for HTML since it can't be figured out from tag
-  if(fieldData.meta.group === "html"){
+  if(fieldData.meta.group === "html" || htmlElements.includes(modifiedFieldData.tag)){
 
     fieldData.type = "html";
     type = "html";
     if(!fieldData.meta.raw){
         // Need to wrap content in tag
-        debugger
         let c = document.createElement(fieldData.tag);
         if(fieldData.content){
             c.innerHTML = fieldData.content;
