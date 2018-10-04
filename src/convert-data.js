@@ -78,12 +78,12 @@ const htmlElements = [
 
 const surefyreTypeModifiers = {
   select: fieldData => {
-    const { options = [], ...rest } = fieldData;
-    rest["options"] = [];
-    for (let val of options) {
+    const { values = [], ...rest } = fieldData;
+    rest["values"] = [];
+    for (let val of values) {
         if(val.value !== ""){
             // Set the option
-            rest["options"].push({
+            rest["values"].push({
                 name: val.label,
                 id: val.value,
             });
@@ -107,6 +107,7 @@ const surefyreTypeModifiers = {
   input: fieldData => {
       if(fieldData.inputType === "checkbox"){
           fieldData.type = "checkbox"; // tag will get converted to type after this function
+          delete fieldData.inputType;
       }
       return fieldData;
   },
