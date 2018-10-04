@@ -13,6 +13,7 @@ const propMap = {
   label: "config.label",
   values: "options",
   type: "meta.id",
+  content: "content",
   description: "config.helpText",
   hint: "config.helpText",
   fieldClasses: "attrs.className",
@@ -22,6 +23,7 @@ const propMap = {
   meta: "meta",
   icon: "meta.icon",
   inputType: "attrs.type",
+  initial: "attrs.value",
   multiple: "meta.multiple", // Formeo errors out if multiple is a attr. Put in meta for now.
 
 };
@@ -32,13 +34,15 @@ const propMap = {
 const propMapInverse = {
     "config.helpText": "hint",
     "attrs.type": "inputType",
+    "attrs.value": "initial",
     "options": "values",
     "attrs": null,
     "tag": "type",
     "meta": null,
     "config": null,
     "selectOptions": "selectOptions",
-    "attr.className": "fieldClasses"
+    "attr.className": "fieldClasses",
+    "content": "value" // for HTML fields
 };
 
 // define all the types that are `input` types
@@ -68,7 +72,8 @@ const htmlElements = [
   "p",
   "blockquote",
   "canvas",
-  "output"
+  "output",
+  "div"
 ];
 
 const surefyreTypeModifiers = {
@@ -89,6 +94,26 @@ const surefyreTypeModifiers = {
     }
     return rest;
   },
+  textarea: fieldData => {
+      fieldData.type = "textArea";
+      return fieldData;
+  },
+  button: fieldData => {
+      fieldData.type = "submit";
+      fieldData.onSubmit = "true";
+      fieldData.validateBeforeSubmit = true;
+      return fieldData;
+  },
+  input: fieldData => {
+      if(fieldData.inputType === "checkbox"){
+          fieldData.type = "checkbox"; // tag will get converted to type after this function
+      }
+      return fieldData;
+  },
+  html: fieldData => {
+      delete fieldData.initial;
+      return fieldData;
+  }
 };
 
 const typeModifiers = {
@@ -157,6 +182,21 @@ const typeModifiers = {
   surefyreUpload: fieldData => {
     fieldData["inputType"] = "file";
     fieldData["tag"] = "input";
+    return fieldData;
+  },
+  submit: fieldData => {
+    fieldData["inputType"] = "file";
+    fieldData["tag"] = "button";
+    fieldData.options = {
+        label: fieldData.buttonText,
+        type: "submit"
+    }
+    return fieldData;
+  },
+  html: fieldData => {
+    fieldData["content"] = fieldData.value;
+    unset(fieldData, "raw");
+    set(fieldData, "meta.raw", true); // raw html that does not need to be wrapped in tag
     return fieldData;
   }
 };
@@ -240,22 +280,36 @@ const surefyreField = fieldData => {
   // set a tag for the field, usually its `input`
   //set(fieldData, "tag", tagMap[metaId] || subtype || type);
   let type = fieldData["tag"];
-  //set(fieldData, "type", fieldData["tag"]);
+
+  // Special case for HTML since it can't be figured out from tag
+  if(fieldData.meta.group === "html"){
+
+    fieldData.type = "html";
+    type = "html";
+    if(!fieldData.meta.raw){
+        // Need to wrap content in tag
+        debugger
+        let c = document.createElement(fieldData.tag);
+        if(fieldData.content){
+            c.innerHTML = fieldData.content;
+        }
+        fieldData.content = c.outerHTML;
+    }
+    unset(fieldData, "tag");
+  }
+
+  // Remove unused fields
   unset(fieldData, "meta.icon");
   unset(fieldData, "meta.id");
   unset(fieldData, "meta.group");
-  //unset(fieldData, "id");
+  unset(fieldData, "meta.raw");
+  unset(fieldData, "config.hideLabel");
 
-  // sometimes we need to change the structure rather than just remapping props
-  if (surefyreTypeModifiers[type]) {
-    fieldData = surefyreTypeModifiers[type](fieldData);
-  }
 
-  const modifiedFieldData = Object.entries(propMapInverse).reduce(
+  let modifiedFieldData = Object.entries(propMapInverse).reduce(
     (acc, [key, newKey]) => {
       if (!SUREFYRE_IGNORED_PROPS.includes(key)) {
         const newValue = get(fieldData, key);
-
         if(newValue) {
             if(newKey){
                 set(acc, newKey, newValue);
@@ -270,6 +324,12 @@ const surefyreField = fieldData => {
     {}
   );
     
+
+  // sometimes we need to change the structure rather than just remapping props
+  if (surefyreTypeModifiers[type]) {
+    modifiedFieldData = surefyreTypeModifiers[type](modifiedFieldData);
+  }
+
   return modifiedFieldData;
 
 };
