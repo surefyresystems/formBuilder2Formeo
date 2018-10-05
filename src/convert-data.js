@@ -54,7 +54,8 @@ const inputTags = [
   "hidden",
   "number",
   "radio-group",
-  "text"
+  "text",
+  "checkbox"
 ];
 
 const tagMap = {
@@ -114,7 +115,7 @@ const surefyreTypeModifiers = {
   html: fieldData => {
       delete fieldData.initial;
       return fieldData;
-  }
+  },
 };
 
 const typeModifiers = {
@@ -199,6 +200,10 @@ const typeModifiers = {
     unset(fieldData, "raw");
     set(fieldData, "meta.raw", true); // raw html that does not need to be wrapped in tag
     return fieldData;
+  },
+  checkbox: fieldData => {
+      fieldData.inputType = "checkbox"; // This will set the type of the input
+      return fieldData;
   }
 };
 
