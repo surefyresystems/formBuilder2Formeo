@@ -23,6 +23,7 @@ const propMap = {
   meta: "meta",
   icon: "meta.icon",
   inputType: "attrs.type",
+  selectOptions: "meta.selectOptions",
   initial: "attrs.value",
   multiple: "meta.multiple", // Formeo errors out if multiple is a attr. Put in meta for now.
 
@@ -36,11 +37,12 @@ const propMapInverse = {
     "attrs.type": "inputType",
     "attrs.value": "initial",
     "options": "values",
+    "meta.selectOtions": "selectOptions",
     "attrs": null,
     "tag": "type",
     "meta": null,
     "config": null,
-    "selectOptions": "selectOptions",
+    //"selectOptions": "selectOptions",
     "attr.className": "fieldClasses",
     "content": "value" // for HTML fields
 };
@@ -160,7 +162,7 @@ const typeModifiers = {
     rest["values"] = [];
     if("noneSelectedText" in selectOptions){
        rest["values"].push({
-           label: String(selectOptions.noneSelectedText) || "test",
+           label: String(selectOptions.noneSelectedText),
            value: "",
        });
     }
@@ -179,6 +181,7 @@ const typeModifiers = {
             })
         }
     }
+    rest.selectOptions = selectOptions; // Add them back and they will be stored in meta
     return rest;
   },
   surefyreUpload: fieldData => {
