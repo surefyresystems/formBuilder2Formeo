@@ -378,27 +378,49 @@ function convertData(data = "[]") {
 
   for (let r of row_array){
       let col_ids = [];
-      let width = (100/r.schema.groups.length).toFixed(2);
-      for (let c of r.schema.groups) {
-          // Each column in the row
-        let loc_fields = dataReducer(c.fields);
-        let loc_column = formeoCreateColumn(Object.values(loc_fields).map(x => x.id), width);
-        col_ids.push(loc_column.id);
+      if(r.schema.fields){
+          let loc_fields = dataReducer(r.schema.fields);
+          let loc_column = formeoCreateColumn(Object.values(loc_fields).map(x => x.id));
 
-        // Update global columns and fields
-        id = loc_column["id"];
-        let col_obj = {};
-        col_obj[id] = loc_column;
-        columns = Object.assign(columns, col_obj);
-        fields = Object.assign(fields, loc_fields);
+          // Update global columns and fields
+          id = loc_column["id"];
+          let col_obj = {};
+          col_obj[id] = loc_column;
+          columns = Object.assign(columns, col_obj);
+          fields = Object.assign(fields, loc_fields);
+
+          // Create row and add column children
+          let row = formeoCreateRow([id]);
+          let row_obj = {};
+          id = row.id;
+          row_obj[id] = row
+
+          rows = Object.assign(rows, row_obj);
       }
-      // Create row and add column children
-      let row = formeoCreateRow(col_ids);
-      let row_obj = {};
-      id = row.id;
-      row_obj[id] = row
 
-      rows = Object.assign(rows, row_obj);
+      if(r.schema.groups){
+        let width = (100/r.schema.groups.length).toFixed(2);
+        for (let c of r.schema.groups) {
+            // Each column in the row
+          let loc_fields = dataReducer(c.fields);
+          let loc_column = formeoCreateColumn(Object.values(loc_fields).map(x => x.id), width);
+          col_ids.push(loc_column.id);
+
+          // Update global columns and fields
+          id = loc_column["id"];
+          let col_obj = {};
+          col_obj[id] = loc_column;
+          columns = Object.assign(columns, col_obj);
+          fields = Object.assign(fields, loc_fields);
+        }
+        // Create row and add column children
+        let row = formeoCreateRow(col_ids);
+        let row_obj = {};
+        id = row.id;
+        row_obj[id] = row
+
+        rows = Object.assign(rows, row_obj);
+      }
   }
 
 
