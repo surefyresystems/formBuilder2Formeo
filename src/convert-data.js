@@ -226,13 +226,14 @@ const formeoRow = ({ id }) => ({
   children: [id]
 });
 
-const formeoCreateRow = (ids) => ({
+const formeoCreateRow = (ids, meta=null) => ({
   id: uuid(),
   config: {
     fieldset: false,
     legend: "",
     inputGroup: false
   },
+  meta: meta,
   attrs: {
     className: "f-row"
   },
@@ -381,6 +382,9 @@ function convertData(data = "[]") {
 
   for (let r of row_array){
       let col_ids = [];
+      // Copy over all the meta (non VFG schema) 
+      let row_meta = Object.assign({}, r);
+      delete row_meta.schema;
       if(r.schema.fields){
           let loc_fields = dataReducer(r.schema.fields);
           let loc_column = formeoCreateColumn(Object.values(loc_fields).map(x => x.id));
@@ -393,7 +397,7 @@ function convertData(data = "[]") {
           fields = Object.assign(fields, loc_fields);
 
           // Create row and add column children
-          let row = formeoCreateRow([id]);
+          let row = formeoCreateRow([id], row_meta);
           let row_obj = {};
           id = row.id;
           row_obj[id] = row
@@ -417,7 +421,7 @@ function convertData(data = "[]") {
           fields = Object.assign(fields, loc_fields);
         }
         // Create row and add column children
-        let row = formeoCreateRow(col_ids);
+        let row = formeoCreateRow(col_ids, row_meta);
         let row_obj = {};
         id = row.id;
         row_obj[id] = row
