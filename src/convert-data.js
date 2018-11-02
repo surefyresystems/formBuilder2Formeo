@@ -342,6 +342,11 @@ const surefyreField = fieldData => {
     modifiedFieldData = surefyreTypeModifiers[type](modifiedFieldData);
   }
 
+  if(!("model" in modifiedFieldData)) {
+      let model_name = get(modifiedFieldData, "label", "field") + "_" + String(uuid());
+      modifiedFieldData["model"] = model_name.replace(/[^0-9a-zA-Z_]/g, "");
+  }
+
   return modifiedFieldData;
 
 };
