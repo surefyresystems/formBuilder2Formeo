@@ -7,6 +7,12 @@ import invert from "lodash/invert";
 
 const IGNORED_PROPS = ["style", "subtype", "role", "access", "toggle", "other"];
 const SUREFYRE_IGNORED_PROPS = ["style", "subtype", "role", "access", "toggle", "other"];
+// No "model" will be created for these fields
+const READONLY_FIELDS = [
+    'html',
+    'submit',
+    'surefyreUpload',
+];
 
 // Add mappings here
 const propMap = {
@@ -46,7 +52,7 @@ const propMapInverse = {
     "meta": null,
     "config": null,
     //"selectOptions": "selectOptions",
-    "attr.className": "fieldClasses",
+    "attrs.className": "fieldClasses",
     "content": "value" // for HTML fields
 };
 
@@ -82,6 +88,7 @@ const htmlElements = [
   "div"
 ];
 
+
 const surefyreTypeModifiers = {
   select: fieldData => {
     const { values = [], ...rest } = fieldData;
@@ -113,6 +120,10 @@ const surefyreTypeModifiers = {
   input: fieldData => {
       if(fieldData.inputType === "checkbox"){
           fieldData.type = "checkbox"; // tag will get converted to type after this function
+          delete fieldData.inputType;
+      }
+      if(fieldData.inputType === "file"){
+          fieldData.type = "surefyreUpload"; // tag will get converted to type after this function
           delete fieldData.inputType;
       }
       return fieldData;
@@ -193,7 +204,6 @@ const typeModifiers = {
     return fieldData;
   },
   submit: fieldData => {
-    fieldData["inputType"] = "file";
     fieldData["tag"] = "button";
     fieldData.options = {
         label: fieldData.buttonText,
@@ -318,6 +328,7 @@ const surefyreField = fieldData => {
   unset(fieldData, "config.hideLabel");
 
 
+  // Map new keys that have a mapping
   let modifiedFieldData = Object.entries(propMapInverse).reduce(
     (acc, [key, newKey]) => {
       if (!SUREFYRE_IGNORED_PROPS.includes(key)) {
@@ -325,15 +336,33 @@ const surefyreField = fieldData => {
         if(newValue) {
             if(newKey){
                 set(acc, newKey, newValue);
-                unset(fieldData, key); // Consume it so it is not copied in other rules
-            } else {
+            }
+        }
+
+        if(newKey) {
+            // We have tried to set this field so remove it from field data so it does not get copied below
+            unset(fieldData, key); // Consume it so it is not copied in other rules
+        }
+      }
+      return acc;
+    },
+    {}
+  );
+
+  // Any other keys that don't have a mapping will be consildated to top level surefyre field
+  modifiedFieldData = Object.entries(propMapInverse).reduce(
+    (acc, [key, newKey]) => {
+      if (!SUREFYRE_IGNORED_PROPS.includes(key)) {
+        const newValue = get(fieldData, key);
+        if(newValue) {
+            if(!newKey){
                 Object.assign(acc, newValue)
             }
         }
       }
       return acc;
     },
-    {}
+    modifiedFieldData
   );
     
 
@@ -342,8 +371,7 @@ const surefyreField = fieldData => {
     modifiedFieldData = surefyreTypeModifiers[type](modifiedFieldData);
   }
 
-  console.log("add model");
-  if(!("model" in modifiedFieldData)) {
+  if(!("model" in modifiedFieldData) && !(READONLY_FIELDS.includes(modifiedFieldData.type))) {
       let model_name = get(modifiedFieldData, "label", "field") + "_" + String(uuid());
       modifiedFieldData["model"] = model_name.replace(/[^0-9a-zA-Z_]/g, "");
   }
